@@ -1,31 +1,22 @@
 ## Synopsis
 
-At the top of the file there should be a short introduction and/ or overview that explains **what** the project is. This description should match descriptions added for package managers (Gemspec, package.json, etc.)
+Code for downloading and writing keholliset tuntemukset data and writing it to .mat and .csv files. See instructions below.
 
-## Code Example
+## Process
 
-Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.
+How to download and process the raw data from Pain clinic project
+1. Navigate to bml.becs.aalto.fi/keholliset_tuntemukset/admin/ and make & download .tar file
+2. Run get_data_from_tar.sh on command line in the location where you downloaded your .tar file
+get_data_from_tar.sh /path/to/output/folder
+3. Run s1_screening_kipu.m, make sure you change path names and include code & bodyspm in your matlab path
+4. Run s2_preprocessing_kipu.m, make sure you change path names and include code & bodyspm in your matlab path
+5. Run load_bg_data.R, make sure you change path names
 
-## Motivation
+## Todo
 
-A short description of the motivation behind the creation and maintenance of the project. This should explain **why** the project exists.
+1. Finish R code for combining background info
+2. Document 'load_bg_data.R' 
+3. Figure out why number of subjects passing screening is not same as number of 'full' subjects from admin view of the app
 
-## Installation
-
-Provide code examples and explanations of how to get the project.
-
-## API Reference
-
-Depending on the size of the project, if it is small and simple enough the reference docs can be added to the README. For medium size to larger projects it is important to at least provide a link to where the API reference docs live.
-
-## Tests
-
-Describe and show how to run the tests with code examples.
-
-## Contributors
-
-Let people know how they can dive into the project, include important links to things like issue trackers, irc, twitter accounts if applicable.
-
-## License
-
-A short snippet describing the license (MIT, Apache, etc.)
+## Problems?
+Contact juulia dot suvilehto at aalto dot fi . 

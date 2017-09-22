@@ -1,7 +1,0 @@
-How to download and process the raw data from Pain clinic project
-1. Navigate to bml.becs.aalto.fi/keholliset_tuntemukset/admin/ and make & download .tar file
-2. Download BodySPM code from https://version.aalto.fi/gitlab/eglerean/BodySPM
-3. Run get_data_from_tar.sh on command line in the location where you downloaded your .tar file
-get_data_from_tar.sh /path/to/output/folder
-4. Run s1_screening_kipu.m, make sure you change path names and include code & bodyspm in your matlab path
-5. Run s2_preprocessing_kipu.m
