@@ -20,7 +20,7 @@ cfg.Nstimuli = 12;
 cfg.phenodata = 1;
 cfg.Nempty = 3;
 %%
-bg_files = {'data.txt','pain_info.txt','BPI_1.txt','BPI_2.txt','current_feelings.txt',};
+bg_files = {'data.txt','pain_info.txt','current_feelings.txt',};
 Nempty=1;	% we allow at least Nempty to be empty.
 if(~isempty(cfg.Nempty))
 	Nempty = cfg.Nempty;

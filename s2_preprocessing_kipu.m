@@ -52,8 +52,38 @@ for i=1:length(out);
 end
 fclose(fileID)
 %% NB: check still cutoff and scaling of images, test with outline image overlays!
+back_outline = double(imread('bodySPM_back_outline.png'));
+front_outline = double(imread('bodySPM_front_outline.png'));
+back_outline(back_outline<50) = 0;
+back_outline(back_outline>50) = 5;
 
+front_outline(front_outline<50) = 0;
+front_outline(front_outline>50) = 5;
+base=uint8(imread('bodySPM_base2.png'));
+mask=uint8(imread('base3.png'));
+mask=mask*.85;
+base2=base(10:531,33:203,:);
+base3 = [double(base2(:,:,1)) double(base2(:,:,1))];
+base3(base3>5) = 30;
+cfg.outdata = '/Users/jtsuvile/Documents/projects/kipupotilaat/data/mat-files/';
+cfg.list = [cfg.outdata 'list.txt'];
+
+%%
+clear resmats;
 close all;
-resmat(resmat~=0) = 1;
-imagesc(sum(resmat,3))
+subjects=textread(cfg.list);
+
+load(['./' num2str(subjects(1)) '.mat'])
+resmats = sum(resmat,3);
+
+for(i=2:20)
+    subnum=subjects(i);
+    load(['./' num2str(subnum) '.mat'])
+    resmat(resmat~=0) = 1;
+    resmats = resmats + sum(resmat,3);
+end
+%%
+%displaymat= resmats - [front_outline back_outline] * 5;
+displaymat= resmats - base3;
+imagesc(displaymat)
 colorbar;

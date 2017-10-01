@@ -24,7 +24,7 @@ function bspm = bodySPM_preprocess_kipu(cfg)
 %		cfg.posneg=[0, 1]; % 1 for pos, -1 for neg, 0 for both
 %		cfg.overwrite=0
 %
-
+%%
 base=uint8(imread('bodySPM_base2.png'));
 mask=uint8(imread('bodySPM_base3.png'));
 mask=mask*.85;
@@ -47,13 +47,15 @@ for ns=1:Nsubj;
 			disp(['Already preprocessed, no overwrite'])
 			continue;
 		end
-	end		
-
+    end
+%%    
+    subjID = subjects{51,:};
     a=bodySPM_load_kipu([cfg.datapath '/' subjID '/'],2, cfg.mapnames);
     S=length(a);
     if( S ~= cfg.Nstimuli)
         disp('Mismatch between expected number of trials and loaded trials')
     end
+   
     resmat=zeros(522,342,cfg.Nstimuli);
     times=zeros(S,2);
     % go through each stimulus
@@ -69,7 +71,7 @@ for ns=1:Nsubj;
             if(y>=600) y=600; end
             over(y,x)=over(y,x)+1;
         end
-        h=fspecial('gaussian',[15 15],5);
+        h=fspecial('gaussian',[25 25],8.5);
         over=imfilter(over,h);
 		M1=1;
 		M2=1;
@@ -82,14 +84,17 @@ for ns=1:Nsubj;
 			M1=0;
 			M2=-1;
         end  
-        
-        if(cfg.onesided(n)==1)
-            over2=M1*over(10:531,33:203,:)-M2*over(10:531,696:866,:);
-            resmat(:,1:171,n)=over2;
-        else
-            over2 = [over(10:531,33:203,:), over(10:531,696:866,:)];
+        % orig: 
+        % over2=M1*over(10:531,33:203,:)-M2*over(10:531,696:866,:);
+
+%         if(cfg.onesided(n)==1)
+%             over2=M1*over(10:531,33:203,:)-M2*over(10:531,701:871,:);
+%             resmat(:,1:171,n)=over2;
+%         else
+            over2=[over(10:531,33:203,:), over(10:531,696:866,:)];
+            %over2 = [over(10:531,33:203,:), over(10:531,700:870,:)];
             resmat(:,:,n)=over2;
-        end
+%        end
         
         % times vector, the first one is the amount of time in milliseconds, the second one is the total number of pixels painted
         if(size(a(n).paint,1)>0 && size(a(n).mouse,1)>0)
@@ -100,7 +105,7 @@ for ns=1:Nsubj;
 		end
         times(n,2)=T;
     end
-    
+%%
     %do average
     if(cfg.doaverage)
 		if(size(cfg.averageMatrix,1)==1)
