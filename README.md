@@ -14,9 +14,7 @@ get_data_from_tar.sh /path/to/output/folder
 
 ## Todo
 
-1. Finish R code for combining background info
-2. Document 'load_bg_data.R' 
-3. Figure out why number of subjects passing screening is not same as number of 'full' subjects from admin view of the app
+1. figure out what is up with drawing results showing data slightly off-centre with regards to mask/outline
 
 ## Problems?
 Contact juulia dot suvilehto at aalto dot fi . 

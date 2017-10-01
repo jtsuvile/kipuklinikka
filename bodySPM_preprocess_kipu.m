@@ -84,17 +84,16 @@ for ns=1:Nsubj;
 			M1=0;
 			M2=-1;
         end  
-        % orig: 
-        % over2=M1*over(10:531,33:203,:)-M2*over(10:531,696:866,:);
-
-%         if(cfg.onesided(n)==1)
-%             over2=M1*over(10:531,33:203,:)-M2*over(10:531,701:871,:);
-%             resmat(:,1:171,n)=over2;
-%         else
-            over2=[over(10:531,33:203,:), over(10:531,696:866,:)];
-            %over2 = [over(10:531,33:203,:), over(10:531,700:870,:)];
+        
+        % NB: run some more tests to see why some of the back info seems
+        % off-centre
+        if(cfg.onesided(n)==1)
+            over2=M1*over(10:531,33:203,:)-M2*over(10:531,696:866,:);
+            resmat(:,1:171,n)=over2;
+        else
+            over2=[over(10:531,33:203,:), over(10:531, 696:866,:)];
             resmat(:,:,n)=over2;
-%        end
+       end
         
         % times vector, the first one is the amount of time in milliseconds, the second one is the total number of pixels painted
         if(size(a(n).paint,1)>0 && size(a(n).mouse,1)>0)
