@@ -19,6 +19,7 @@ The colouring data are either one-sided (emotions, where subjects colour in acti
 The order of the stimuli were randomised within each block (see below), but the blocks were always presented in the order below. If you want to see exact order of stimuli presented to a particular subject, see presentation_[block name].txt in that subject's folder.
 
 ##Order of stimuli in the matrix:
+
 ###emotion block
 'Arvioi alla oleviin kuviin, miten kehosi toiminta muuttuu, kun koet'
 1. surua
@@ -28,9 +29,11 @@ The order of the stimuli were randomised within each block (see below), but the 
 5. pelkoa
 6. inhoa
 7. ei mitään erityistä (neutraali)
+
 ###pain block
 8. Väritä kuviin ne alueet, joissa koet kipua juuri tällä hetkellä
 9. Väritä kuviin ne alueet, joissa koet usein toistuvaa ja/tai pitkäkestoista kipua
+
 ###sensitivity block
 10. Väritä kuviin ne alueet, joissa tunnet pienenkin kosketuksen herkästi
 11. Väritä kuviin ne alueet, jotka ovat erityisen kipuherkkiä
