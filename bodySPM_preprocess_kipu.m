@@ -49,7 +49,6 @@ for ns=1:Nsubj;
 		end
     end
 %%    
-    subjID = subjects{51,:};
     a=bodySPM_load_kipu([cfg.datapath '/' subjID '/'],2, cfg.mapnames);
     S=length(a);
     if( S ~= cfg.Nstimuli)
@@ -75,25 +74,17 @@ for ns=1:Nsubj;
         over=imfilter(over,h);
 		M1=1;
 		M2=1;
-
-		if(cfg.posneg(n)==1)
-			M2=0;
-        end
         
-		if(cfg.posneg(n)==-1)
-			M1=0;
-			M2=-1;
-        end  
-        
-        % NB: run some more tests to see why some of the back info seems
-        % off-centre
-        if(cfg.onesided(n)==1)
+        % NB: the one-sided and two-sided images are slightly differently
+        % located on the matrix, so indices in the below clauses are
+        % different on purpose /JS
+        if(cfg.onesided(n)==1) %if onesided, populate only the left side of the matrix
             over2=M1*over(10:531,33:203,:)-M2*over(10:531,696:866,:);
             resmat(:,1:171,n)=over2;
-        else
-            over2=[over(10:531,33:203,:), over(10:531, 696:866,:)];
+        else 
+            over2=[over(10:531,35:205,:), over(10:531, 700:870,:)];
             resmat(:,:,n)=over2;
-       end
+        end
         
         % times vector, the first one is the amount of time in milliseconds, the second one is the total number of pixels painted
         if(size(a(n).paint,1)>0 && size(a(n).mouse,1)>0)

@@ -53,3 +53,52 @@ for i=1:length(out);
     fprintf(fileID,'%s\n',[out{i}]);
 end
 fclose(fileID)
+%% NB: check still cutoff and scaling of images, test with outline image overlays!
+back_outline = double(imread('bodySPM_back_outline.png'));
+front_outline = double(imread('bodySPM_front_outline.png'));
+back_outline(back_outline<50) = 0;
+back_outline(back_outline>50) = 5;
+
+front_outline(front_outline<50) = 0;
+front_outline(front_outline>50) = 5;
+outline = [front_outline back_outline];
+outline(outline > 10) = 1;
+base=uint8(imread('bodySPM_base2.png'));
+mask=uint8(imread('bodySPM_base3.png'));
+fb_mask=double(imread('bodySPM_frontback_mask.png'));
+mask=double(mask*.85);
+mask(mask<30) = 0;
+mask(mask>1) = 1;
+fb_mask = fb_mask(:,:,1);
+fb_mask(fb_mask<30) = 0;
+fb_mask(fb_mask > 1 ) =1;
+fb_mask = [fb_mask fb_mask];
+base2=base(10:531,33:203,:);
+base3 = [double(base2(:,:,1)) double(base2(:,:,1))];
+base3(base3>5) = 2;
+cfg.outdata = '/Users/jtsuvile/Documents/projects/kipupotilaat/data/mat-files/';
+cfg.list = [cfg.outdata 'list.txt'];
+subject_ids = textread(cfg.list,'%s');
+%%
+clear resmats;
+close all;
+
+subjects = subject_ids(1:10);
+%%
+for i=1:1%length(subjects)
+    subnum=subjects{i};
+    load([cfg.outdata subnum '.mat'])
+    resmat(resmat~=0) = 1;
+    emotion_resmats = sum(resmat(:,1:171,1:7),3);
+    pain_resmats = sum(resmat(:,:,8:9),3);
+    sensitivity_resmats = sum(resmat(:,:,10:12),3);
+end
+
+%%
+close all;
+imagesc(emotion_resmats .* mask);
+colorbar;
+%%
+close all;
+imagesc(pain_resmats.*fb_mask - outline);
+colorbar;
