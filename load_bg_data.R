@@ -1,6 +1,9 @@
 rm(list = ls())
+library(plyr)
 location <- '/Users/jtsuvile/Documents/projects/kipupotilaat/data/'
 bgfiles <- c('data.txt','pain_info.txt','BPI_1.txt', 'BPI_2.txt', 'current_feelings.txt') 
+profes <- read.csv2('/Users/jtsuvile/Documents/projects/kipupotilaat/code/ammattien_koodit.csv',
+                    row.names=NULL, fill=TRUE, col.names=c('code', 'name'), stringsAsFactors = FALSE)
 
 # The background files have following fields:
 ## data.txt 
@@ -65,7 +68,8 @@ subs$backneck <- factor(subs$backneck, levels=c(0,1,3), labels=c('no', 'yes', 'n
 subs$limb <- factor(subs$limb, levels=c(0,1,3), labels=c('no', 'yes', 'not_recently'))
 subs$periods <- factor(subs$periods, levels=c(0,1,3), labels=c('no', 'yes', 'not_recently'))
 
-table(subs$education)
-summary(subs)
+# replace work codes with human-readable text
+profes <- profes[!(profes$name==''), ]
+subs$ammatti <- mapvalues(subs$profession, profes$code, profes$name, warn_missing = FALSE)
 
 write.csv(subs, paste(location,'subs_bg_info.csv'))

@@ -2,6 +2,8 @@ clear all
 close all
 
 addpath(genpath('/Users/jtsuvile/Documents/projects/kipupotilaat/code/BodySPM/'));
+addpath(genpath('/Users/jtsuvile/Documents/projects/kipupotilaat/code/'));
+
 
 cfg.outdata = '/Users/jtsuvile/Documents/projects/kipupotilaat/data/mat-files/';
 if(exist(cfg.outdata)~=7)
