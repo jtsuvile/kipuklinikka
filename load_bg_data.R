@@ -53,6 +53,14 @@ for(sub in subs$subid){
   feelingsdata = suppressWarnings(read.table(paste(location, 'subjects/', sub, '/current_feelings.txt', sep=''), header=FALSE, sep=',', strip.white = TRUE, stringsAsFactors = FALSE))
   subs[subs$subid==sub,38:46] <- tail(feelingsdata,1)[1:9]
 }
+##NB: comment this out if you want to keep all three sexes
+other_sex = subs$sex==3
+subs<- subs[!other_sex,]
+
+subs_for_matlab <- subs
+subs_for_matlab$profession <- NULL
+write.csv(subs_for_matlab, paste(location,'subs_bg_info_numeric.csv', sep=''),na = 'NaN')
+
 
 #add factors for a more understandable table
 subs$sex <- factor(subs$sex, levels=c(0,1,3), labels = c('male','female','other'))
@@ -70,6 +78,8 @@ subs$periods <- factor(subs$periods, levels=c(0,1,3), labels=c('no', 'yes', 'not
 
 # replace work codes with human-readable text
 profes <- profes[!(profes$name==''), ]
+
 subs$ammatti <- mapvalues(subs$profession, profes$code, profes$name, warn_missing = FALSE)
 
-write.csv(subs, paste(location,'subs_bg_info.csv'))
+write.csv(subs, paste(location,'subs_bg_info.csv', sep=''))
+write.table(subs$subid, paste(location, 'list_twosex.txt', sep=''), row.names = FALSE, col.names = FALSE)

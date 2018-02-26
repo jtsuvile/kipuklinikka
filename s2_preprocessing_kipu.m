@@ -36,20 +36,25 @@ for ss=1:cfg.Nstimuli
 	saveas(gcf,[cfg.outdata '/allTimes_' num2str(ss)  '.png'])
 end
 close all;
+% %%
+% ids=find(bspm.tocheck<=14);
+% subjects=textread(cfg.list);
+% %%
+% for i = 1:length(ids)
+%     out{i,1}=subjects(ids(i),:);
+% end
 %%
-ids=find(bspm.tocheck<=14);
-subjects=textread(cfg.list);
+% fileID=fopen([cfg.outdata '/whitelist.txt'],'w');
+% for i=1:length(out);
+% %     if(~strcmp(out{i}(1),'F'))
+% %         disp([out{i} ' has invalid ID for this study']);
+% %         continue;
+% %     end
+%     fprintf(fileID,'%s\n',[out{i}]);
+% end
+% fclose(fileID)
 %%
-for i = 1:length(ids)
-    out{i,1}=subjects(ids(i),:);
-end
-%%
-fileID=fopen([cfg.outdata '/whitelist.txt'],'w');
-for i=1:length(out);
-%     if(~strcmp(out{i}(1),'F'))
-%         disp([out{i} ' has invalid ID for this study']);
-%         continue;
-%     end
-    fprintf(fileID,'%s\n',[out{i}]);
-end
-fclose(fileID)
+cfg.list = [cfg.outdata 'list_twosex.txt'];
+cfg.overwrite_raw = 0;
+% NB: this will take a while!
+c = make_raw_data_matrices(cfg);

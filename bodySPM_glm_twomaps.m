@@ -1,4 +1,4 @@
-function bspm = bodySPM_glm(cfg)
+function bspm = bodySPM_glm_twomaps(cfg)
 
 % bodySPM_glm(cfg)
 %
@@ -19,64 +19,68 @@ function bspm = bodySPM_glm(cfg)
 %		bspm.glm = correlations between maps and models
 %		bspm.pvals = p values from corr function
 
-
-% if(cfg.onesided(cfg.condition)==1)
-%     base=uint8(imread('bodySPM_base2.png'));
-%     mask=uint8(imread('bodySPM_base3.png'));
-% elseif(cfg.onesided(cfg.condition)==0)
-mask_oneside=uint8(imread('bodySPM_frontback_mask.png'));
-mask = [mask_oneside mask_oneside];
-%     mask=mask(:,:,1);
-% else 
-%     error('what kind of mask should I use?');
-% end
-% mask=mask*.85;
-%in_mask=find(mask>128);
+%%
+if(cfg.onesided(cfg.condition)==1)
+    base=uint8(imread('bodySPM_base2.png'));
+    mask=uint8(imread('bodySPM_base3.png'));
+elseif(cfg.onesided(cfg.condition)==0)
+    mask_oneside=uint8(imread('bodySPM_frontback_mask.png'));
+    mask = [mask_oneside mask_oneside];
+    mask=mask(:,:,1);
+else
+    error('what kind of mask should I use?');
+end
+mask=mask*.85;
+in_mask=find(mask>128);
 
 
 % todo: add input checks
+%%
+% subjects=textread(cfg.list,'%8c'); 
+% subjects=textread(cfg.list,'%s'); 
+% Nsubj=size(subjects,1);
+% tocheck=zeros(Nsubj,1);
 
-%subjects=textread(cfg.list,'%8c'); 
-subjects=textread(cfg.list,'%s'); 
-Nsubj=size(subjects,1);
-%tocheck=zeros(Nsubj,1);
-co = zeros(size(mask,1), size(mask,2),length(cfg.condition));
-pe = zeros(size(mask,1), size(mask,2),length(cfg.condition));
+cfg.rawdatafile = [cfg.datapath cfg.mapnames{cfg.condition} '_raw_data_matrix.mat'];
+load(cfg.rawdatafile) %rawmat
+emomap = rawmat;%(:,1:171,:);
+clear rawmat;
+cfg.refmat = [cfg.datapath cfg.mapnames{cfg.ref} '_raw_data_matrix.mat'];
+load(cfg.refmat) %rawmat
+refmap = rawmat; 
+refmap_front = refmap(:,1:171,:);
+refmap_back = refmap(:,172:end,:);
 
-for ns=1:length(cfg.condition)
-    condition = cfg.condition(ns);
-    cfg.rawdatafile = [cfg.datapath cfg.mapnames{condition} '_raw_data_matrix.mat'];
-    load(cfg.rawdatafile) %rawmat
-    tempdata=reshape(rawmat,[],size(rawmat,3));
-    if(ns==1)
-		alldata=zeros(size(tempdata,1),size(tempdata,2),length(cfg.condition));
-	end
-    alldata(:,:,ns) = tempdata;
+rs = zeros(size(rawmat,3),2);
+ps = zeros(size(rawmat,3),2);
 
-    disp(['Computing GLM for condition ' num2str(cfg.condition) ' out of ' num2str(length(cfg.mapnames))])
+%emomap_inmask = emomap(in_mask,:)
+emotemp=reshape(emomap,[],size(rawmat,3));
+reftemp = reshape(refmap,[],size(rawmat,3));
+reftempfront = reshape(refmap_front,[],size(rawmat,3));
+reftempback = reshape(refmap_back,[],size(rawmat,3));
 
-    cfg.model(isnan(cfg.model))=0; % note! for pain (recent, worst etc) stuff, we set NaNs to 0 
-
-    [cr, ps]=corr(tempdata',cfg.model(~isnan(cfg.model)),'type',cfg.corrtype);
-    co_tmp = co(:,:,ns);
-    co_tmp(:) = cr;
-    co(:,:,ns) = co_tmp;
-    pe_tmp = pe(:,:,ns);
-    pe_tmp(:) = ps;
-    pe(:,:,ns) = pe_tmp;
-end
-[pID, pN] = FDR(pe, 0.05);
-
-%not tested yet!
-if(isempty(pN))
-    pN=0;
+disp(['Computing subject-wise correlations'])
+if(cfg.onesided(cfg.condition)==0)
+    for subj=1:size(rawmat,3)
+        [r_front, p_front]=corr(emotemp(in_mask,subj),reftemp(in_mask,subj),'type',cfg.corrtype);
+        rs(subj,1) = r_front;
+        ps(subj,1) = p_front;
+    end
+else
+    for subj=1:size(rawmat,3)
+        [r_front, p_front]=corr(emotemp(in_mask,subj),reftempfront(in_mask,subj),'type',cfg.corrtype);
+        [r_back, p_back]=corr(emotemp(in_mask,subj),reftempback(in_mask,subj),'type',cfg.corrtype);
+        rs(subj,1) = r_front;
+        rs(subj,2) = r_back;
+        ps(subj,1) = p_front;
+        ps(subj,2) = p_back;
+    end
 end
 
 bspm=cfg;
-bspm.glm=co;
-bspm.pvals=pe;
-bspm.plim = [pID pN];
-bspm.conditions = cfg.mapnames(cfg.condition);
+bspm.correl.r = rs;
+bspm.correl.p = ps;
 %bwmask=double(mask>127);
 
 % if(cfg.niter > 0) % if we do clu corr
