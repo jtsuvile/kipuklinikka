@@ -47,7 +47,11 @@ for ns=1:length(cfg.condition)
     condition = cfg.condition(ns);
     cfg.rawdatafile = [cfg.datapath cfg.mapnames{condition} '_raw_data_matrix.mat'];
     load(cfg.rawdatafile) %rawmat
+    if cfg.absval==1
+        rawmat = abs(rawmat);
+    end
     tempdata=reshape(rawmat,[],size(rawmat,3));
+
     if(ns==1)
 		alldata=zeros(size(tempdata,1),size(tempdata,2),length(cfg.condition));
 	end

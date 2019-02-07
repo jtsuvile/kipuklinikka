@@ -1,11 +1,14 @@
 rm(list = ls())
 library(psych)
+library(stats)
 library(corrplot)
 library(RColorBrewer)
 #library(Hmisc)
+library(tidyverse)
 
 location <- '/Users/jtsuvile/Documents/projects/kipupotilaat/data/'
 subs <- read.csv(paste(location, 'subs_bg_info_with_masked_activations.csv', sep=''))
+pain_overlap <- read.csv(paste(location, 'pains_overlap.csv', sep=''), header=TRUE, na.strings = 'NaN')
 size_frontbackmask <- 91840 #pixels
 emotions <- c('sadness','joy','anger','surprise','fear','disgust','neutral')
 pains <- c('acute_pain','chronic_pain')
@@ -25,6 +28,13 @@ varnames = gsub("_neg", '_neg_activations', varnames)
 
 colnames(subs)<- varnames
 
+subs$pain_overlap_body <- pain_overlap$overlap_prop_body
+subs$pain_overlap_all_pain <- pain_overlap$overlap_prop_all_pain
+subs$pain_overlap_all_pain[subs$pain_overlap_all_pain==0] = NA
+subs$pain_overlap_body[subs$pain_overlap_body==0] = NA
+
+subs$acute_pain_compound = subs$pain * subs$acute_pain_total
+
 table(subs$sex)
 table(subs$paincurrent)
 table(subs$chronicpain)
@@ -43,7 +53,7 @@ mean(subs$physactivity, na.rm=T)
 sd(subs$physactivity, na.rm=T)
 
 look_at <- c(3,8:9, 37:47, 49:50, 52:53, 55:56, 58:59,61:62,64:65,69, 72, 75, 78, 81)
-varnames[look_at]
+colnames(subs)[look_at]
 smaller_bg = subs[,look_at]
 new_order <- c(1:4, 27:31, 5:26)
 smaller_bg <- smaller_bg[,new_order]
@@ -69,9 +79,15 @@ smaller_chronic = smaller_chronic[,new_order]
 smaller_nonchronic = smaller_nonchronic[,new_order]
 smaller_nonpain = smaller_nonpain[,new_order]
 
-corr_chronic <- corr.test(smaller_chronic)
-corr_nonchronic <- corr.test(smaller_nonchronic)
-corr_nonpain <- corr.test(smaller_nonpain)
+corr_chronic <- corr.test(smaller_chronic, method='spearman')
+corr_nonchronic <- corr.test(smaller_nonchronic, method='spearman')
+corr_nonpain <- corr.test(smaller_nonpain, method='spearman')
+
+# partial correlation between pain intensity, pain extent, and age
+look_at <- c(3,37, 49:50, 52:53, 55:56, 58:59,61:62,64:65,69, 72, 82, 83, 84)
+colnames(subs)[look_at]
+small_corrmat <- corr.test(subs[,look_at])
+par_r <- partial.r(subs[,look_at], c(2,3:19), 1)
 
 pdf(paste(location, 'figures/all_kinds_of_correlations_chronic_pain_curr_pain.pdf', sep=''), width=10, height=7)
 corrplot(corr_chronic$r, p.mat = corr_chronic$p, sig.level = .05, insig = "blank", 
@@ -129,3 +145,33 @@ subs_new$chronicpain <- factor(subs_new$chronicpain)
 lm4 <- lm(joy_pos_activations~pain*age, subset=subs_new$chronicpain==1, data=subs_new)
 summary(lm4)
 relaimpo::calc.relimp(lm4)
+
+# For the presentation at CERE
+look_at <- c(37:45, 69, 72)
+colnames(subs)[look_at]
+smaller_bg_for_CERE = subs[,look_at]
+new_order <- c(1, 10:11, 4:9, 2:3)
+smaller_bg_for_CERE <- smaller_bg_for_CERE[,new_order]
+correlations <- corr.test(smaller_bg_for_CERE, method='spearman')
+
+color_palette <- brewer.pal(n = 15, name = "RdBu")
+
+pdf(paste(location, 'figures/corrs_for_pres.pdf', sep=''), width=10, height=7)
+corrplot(correlations$r, p.mat = correlations$p, sig.level = .05, insig = "blank", 
+         method='circle', type='lower', col = color_palette[11:1],tl.col = "black", tl.srt = 45,
+         title= ' ',mar=c(0,0,1,0), diag=TRUE)
+dev.off()
+
+# partial correlation between pain intensity, depression, anxiety
+#par_corr <- partial.r(smaller_bg_for_CERE, c(1:3,6:11), c(4,5))
+par_corr <- partial.r(correlations$r, c(1:9), c(10,11))
+par_p <- corr.p(par_corr, n=2054) # NB: corr.p may be applied to the results of partial.r if n is set to n - s (where s is the number of variables partialed out) Fisher, 1924.
+
+pdf(paste(location, 'figures/corrs_depression_anxiety_partialed_out.pdf', sep=''), width=10, height=7)
+corrplot(par_p$r, p.mat = par_p$p, sig.level = .05, insig = "blank", 
+         method='circle', type='lower', col = color_palette[11:1],tl.col = "black", tl.srt = 45,
+         title= ' ',mar=c(0,0,1,0), diag=TRUE)
+dev.off()
+
+ggplot(subs, aes(x=subs$pain, y=subs$sadness_neg_activations, color=subs$chronicpain))+
+  geom_jitter(alpha=0.2)

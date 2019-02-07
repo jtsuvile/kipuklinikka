@@ -15,6 +15,7 @@ base=uint8(imread(sprintf('%sbase2.png',bodyspm)));
 mask=uint8(imread(sprintf('%sbase3.png',bodyspm)));
 mask=mask*.85;
 base2=base(10:531,33:203,:);
+cfg.onesided = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]; % does the final data have one or two shapes
 
 %% Hey ho, let's go ...
 
@@ -46,7 +47,7 @@ for ns=1:k;
         elseif(n~=1 && isempty(find(list==n-1)));
             over=nan(size(base,1),size(base,2));
             over2=[over(10:531,33:203,:) over(10:531,696:866,:)];
-            resmat(:,:,n)=over2; 
+            resmat(:,:,n)=over2;
         else
             if (n==1)
                 T = length(a(1).paint(:,2));
@@ -73,10 +74,19 @@ for ns=1:k;
                     over(y,x)=over(y,x)+1;
                 end
             end
-        h=fspecial('gaussian',[25 25],8.5);
-        over=imfilter(over,h);
-        over2=[over(10:531,33:203,:) over(10:531,696:866,:)];
-        resmat(:,:,n)=over2;
+            h=fspecial('gaussian',[25 25],8.5);
+            over=imfilter(over,h);
+            M1=1;
+            M2=1;
+            
+            if(cfg.onesided(n)==1)
+                over2=[M1*over(10:531,33:203,:), M2*over(10:531,696:866,:)];
+                %resmat(:,1:171,n)=over2;
+                resmat(:,:,n)=over2;
+            else
+                over2=[over(10:531,35:205,:), over(10:531, 700:870,:)];
+                resmat(:,:,n)=over2;
+            end
         end
     end
     
@@ -90,27 +100,27 @@ for ns=1:k;
     %mkdir(pwd, 'mat-files');
     save (matname, 'resmat');
     %%
-%     for i=1:n;
-%         subplot(2,10,i);
-%         imagesc(base2);
-%         axis('off');
-%         set(gcf,'Color',[1 1 1]);
-%         hold on;
-%         over2=resmat(:,:,i);
-%         
-%         min=-1;
-%         max=1;
-%         fh=imagesc(over2,[min max]);
-%         axis('off');
-%         colormap(lines);
-%         %mask=ones(size(over2))*.7; old
-%         set(fh,'AlphaData',mask)
-%         %title(labels(i),'FontSize',10)
-%     end
-%     
-%     fname1=sprintf('%s.tiff',subname);
-%     
-%     export_fig(fname1, '-m1.5');
-%     close all
+    %     for i=1:n;
+    %         subplot(2,10,i);
+    %         imagesc(base2);
+    %         axis('off');
+    %         set(gcf,'Color',[1 1 1]);
+    %         hold on;
+    %         over2=resmat(:,:,i);
+    %
+    %         min=-1;
+    %         max=1;
+    %         fh=imagesc(over2,[min max]);
+    %         axis('off');
+    %         colormap(lines);
+    %         %mask=ones(size(over2))*.7; old
+    %         set(fh,'AlphaData',mask)
+    %         %title(labels(i),'FontSize',10)
+    %     end
+    %
+    %     fname1=sprintf('%s.tiff',subname);
+    %
+    %     export_fig(fname1, '-m1.5');
+    %     close all
 end
 

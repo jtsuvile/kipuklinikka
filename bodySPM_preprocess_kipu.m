@@ -79,7 +79,7 @@ for ns=1:Nsubj;
         % located on the matrix, so indices in the below clauses are
         % different on purpose /JS
         if(cfg.onesided(n)==1) %if onesided, populate only the left side of the matrix
-            over2=M1*over(10:531,33:203,:)-M2*over(10:531,696:866,:);
+            over2=M1*over(10:531,33:203,:)-M2*over(10:531,698:868,:);
             resmat(:,1:171,n)=over2;
         else 
             over2=[over(10:531,35:205,:), over(10:531, 700:870,:)];

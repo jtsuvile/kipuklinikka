@@ -19,7 +19,7 @@ cfg.list = [cfg.datapath '/list.txt'];
 %%
 cfg.onesided = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]; % does the final data have one or two shapes
 cfg.mapnames = {'emotions_0','emotions_1','emotions_2','emotions_3','emotions_4','emotions_5','emotions_6','pain_0','pain_1','sensitivity_0','sensitivity_1', 'sensitivity_2'};
-cfg.display_mapnames = {'Sadness','Joy','Anger','Surprise','Fear','Disgust','Neutral',...
+cfg.display_mapnames = {'Sadness','Happiness','Anger','Surprise','Fear','Disgust','Neutral',...
     'Acute pain','Chronic pain',...
     'tactile sensitivity', 'pain sensitivity', 'hedonic sensitivity'};
 base_oneside=uint8(imread('bodySPM_base2.png'));
@@ -39,7 +39,7 @@ frontback_outline = [front_outline back_outline];
 % for pains: M = 25, y=7; how_many_conds = 2;
 % for sensitivity: M = 40, y=9; how_many_conds = 3;
 % for emotions: M=35, y=0; how_many_conds = 7;
-what = 'sensitivity';
+what = 'emotions';
 if  strcmp(what, 'emotions')
     M=30;
     y=0;
@@ -84,7 +84,7 @@ for i=1:how_many_conds
         mask = mask_frontback;
         h = imagesc(tvals-frontback_outline, [0 M]);
     end
-    set(h,'AlphaData',mask)
+    %set(h,'AlphaData',mask)
     title(cfg.display_mapnames{cond}, 'FontSize', 18)
     colormap(map)
     %colorbar

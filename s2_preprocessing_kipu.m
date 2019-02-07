@@ -4,8 +4,8 @@ close all
 addpath(genpath('/Users/jtsuvile/Documents/projects/kipupotilaat/code/BodySPM/'));
 addpath(genpath('/Users/jtsuvile/Documents/projects/kipupotilaat/code/'));
 
-cfg.outdata = '/Users/jtsuvile/Documents/projects/kipupotilaat/data/mat-files/';
-cfg.datapath = '/Users/jtsuvile/Documents/projects/kipupotilaat/data/subjects/';
+cfg.outdata = '/Users/jtsuvile/Documents/projects/kipupotilaat/ruotsi/data/mat-files/';
+cfg.datapath = '/Users/jtsuvile/Documents/projects/kipupotilaat/ruotsi/data/';
 if(exist(cfg.outdata)~=7)
     mkdir(cfg.outdata)
 end
@@ -13,7 +13,7 @@ end
 cfg.Nstimuli = 12;
 cfg.Nempty = 3;
 cfg.phenodata = 1;
-cfg.list = [cfg.outdata 'list.txt'];
+cfg.list = [cfg.datapath 'subs.txt'];
 cfg.doaverage = 0;
 cfg.hasBaseline = 0;
 cfg.posneg= [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1];
@@ -54,7 +54,6 @@ close all;
 % end
 % fclose(fileID)
 %%
-cfg.list = [cfg.outdata 'list_twosex.txt'];
-cfg.overwrite_raw = 0;
+cfg.overwrite_raw = 1;
 % NB: this will take a while!
-c = make_raw_data_matrices(cfg);
+cbspm = make_raw_data_matrices(cfg);
