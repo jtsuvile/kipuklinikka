@@ -1,9 +1,9 @@
 rm(list = ls())
 library(plyr)
-location <- '/Users/jtsuvile/Documents/projects/kipupotilaat/data/'
+location <- '/m/nbe/scratch/socbrain/kipupotilaat/data/helsinki/'
 bgfiles <- c('data.txt','pain_info.txt','BPI_1.txt', 'BPI_2.txt', 'current_feelings.txt') 
-profes <- read.csv2('/Users/jtsuvile/Documents/projects/kipupotilaat/code/ammattien_koodit.csv',
-                    row.names=NULL, fill=TRUE, col.names=c('code', 'name'), stringsAsFactors = FALSE)
+#profes <- read.csv2('/Users/jtsuvile/Documents/projects/kipupotilaat/code/ammattien_koodit.csv',
+#                    row.names=NULL, fill=TRUE, col.names=c('code', 'name'), stringsAsFactors = FALSE)
 
 # The background files have following fields:
 ## data.txt 
@@ -22,7 +22,7 @@ profes <- read.csv2('/Users/jtsuvile/Documents/projects/kipupotilaat/code/ammatt
 ## current_feelings.txt
 # Right now, how much do you feel: 'pain','depression','anxiety','joy','sadness','anger','fear','surprise','disgust'
  # get subject id's
-subs <- read.csv(paste(location, 'mat-files/list.txt', sep=''), header=FALSE)
+subs <- read.csv(paste(location, 'subjects/subs.txt', sep=''), header=FALSE)
 colnames(subs) <- 'subid'
 
 

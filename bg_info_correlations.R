@@ -7,42 +7,56 @@ library(RColorBrewer)
 library(tidyverse)
 
 location <- '/Users/jtsuvile/Documents/projects/kipupotilaat/data/'
-subs <- read.csv(paste(location, 'subs_bg_info_with_masked_activations.csv', sep=''))
-pain_overlap <- read.csv(paste(location, 'pains_overlap.csv', sep=''), header=TRUE, na.strings = 'NaN')
-size_frontbackmask <- 91840 #pixels
-emotions <- c('sadness','joy','anger','surprise','fear','disgust','neutral')
+subs <- read.csv(paste(location, 'all_pain_patients_with_activations.csv', sep=''))
+#pain_overlap <- read.csv(paste(location, 'pains_overlap.csv', sep=''), header=TRUE, na.strings = 'NaN')
+#size_frontbackmask <- 91840 #pixels
+emotions <- c('sadness','happiness','anger','surprise','fear','disgust','neutral')
 pains <- c('acute_pain','chronic_pain')
 sensitivity <- c('tactile_sensitivity', 'pain_sensitivity','hedonic_sensitivity')
+
+look_at_names <- c('age','work_physical','work_sitting','feels_pain', 'acute_pain_total', 'chronic_pain_total', 'tactile_sensitivity_total', 'pain_sensitivity_total', 
+                   'hedonic_sensitivity_total',
+                   'feels_anxiety', 'feels_depression', 'feels_sad', 'feels_happy', 'feels_angry', 'feels_surprise', 'feels_fear', 'feels_disgust',
+                   'sadness_pos_activations', 'sadness_neg_activations', 'happiness_pos_activations', 'happiness_neg_activations',
+                   'anger_pos_activations', 'anger_neg_activations', 'surprise_pos_activations', 'surprise_neg_activations',
+                   'fear_pos_activations', 'fear_neg_activations', 'disgust_pos_activations', 'disgust_neg_activations', 'neutral_pos_activations',
+                   'neutral_neg_activations')
+
 varnames <- colnames(subs)
+
+varnames = gsub("_pos_color", '_pos_activations', varnames)
+varnames = gsub("_neg_color", '_neg_activations', varnames)
+
 for(i in 1:7){
   varnames = gsub(paste("emotions", i-1, sep='_'), emotions[i], varnames)
 }
 for(j in 1:2){
   varnames = gsub(paste("pain", j-1, sep='_'), pains[j], varnames)
+  varnames = gsub(paste( pains[j], 'pos_activations', sep='_'), paste(pains[j], 'total', sep='_'), varnames)
 }
 for(k in 1:3){
   varnames = gsub(paste("sensitivity", k-1, sep='_'), sensitivity[k], varnames)
+  varnames = gsub(paste(sensitivity[k], 'pos_activations', sep='_'), paste(sensitivity[k], 'total', sep='_'), varnames)
 }
-varnames = gsub("_pos", '_pos_activations', varnames)
-varnames = gsub("_neg", '_neg_activations', varnames)
+
 
 colnames(subs)<- varnames
 
-subs$pain_overlap_body <- pain_overlap$overlap_prop_body
-subs$pain_overlap_all_pain <- pain_overlap$overlap_prop_all_pain
-subs$pain_overlap_all_pain[subs$pain_overlap_all_pain==0] = NA
-subs$pain_overlap_body[subs$pain_overlap_body==0] = NA
+# subs$pain_overlap_body <- pain_overlap$overlap_prop_body
+# subs$pain_overlap_all_pain <- pain_overlap$overlap_prop_all_pain
+# subs$pain_overlap_all_pain[subs$pain_overlap_all_pain==0] = NA
+# subs$pain_overlap_body[subs$pain_overlap_body==0] = NA
 
-subs$acute_pain_compound = subs$pain * subs$acute_pain_total
+# subs$acute_pain_compound = subs$feels_pain * subs$acute_pain_total
 
 table(subs$sex)
 table(subs$paincurrent)
 table(subs$chronicpain)
 table(subs$painrecent)
-mean(subs$painaverage, na.rm=T)
-sd(subs$painaverage, na.rm=T)
+mean(subs$bpi_average, na.rm=T)
+sd(subs$bpi_average, na.rm=T)
 
-mean(subs$chronic_pain_total, na.rm=T)
+mean(subs$chronic_pain_pos_activations, na.rm=T)
 sd(subs$chronic_pain_total, na.rm=T)
 mean(subs$acute_pain_total, na.rm=T)
 sd(subs$acute_pain_total, na.rm=T)
@@ -84,6 +98,7 @@ corr_nonchronic <- corr.test(smaller_nonchronic, method='spearman')
 corr_nonpain <- corr.test(smaller_nonpain, method='spearman')
 
 # partial correlation between pain intensity, pain extent, and age
+
 look_at <- c(3,37, 49:50, 52:53, 55:56, 58:59,61:62,64:65,69, 72, 82, 83, 84)
 colnames(subs)[look_at]
 small_corrmat <- corr.test(subs[,look_at])

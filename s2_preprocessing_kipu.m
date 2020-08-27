@@ -1,11 +1,11 @@
 clear all
 close all
 %% Change these paths to point at your relevant folders
-addpath(genpath('/Users/jtsuvile/Documents/projects/kipupotilaat/code/BodySPM/'));
-addpath(genpath('/Users/jtsuvile/Documents/projects/kipupotilaat/code/'));
+addpath(genpath('/m/nbe/scratch/socbrain/kipupotilaat/code/BodySPM/'));
+addpath(genpath('/m/nbe/scratch/socbrain/kipupotilaat/code/'));
 
-cfg.outdata = '/Users/jtsuvile/Documents/projects/kipupotilaat/ruotsi/data/mat-files/';
-cfg.datapath = '/Users/jtsuvile/Documents/projects/kipupotilaat/ruotsi/data/';
+cfg.outdata = '/m/nbe/scratch/socbrain/kipupotilaat/data/helsinki/subjects/mat-files/';
+cfg.datapath = '/m/nbe/scratch/socbrain/kipupotilaat/data/helsinki/subjects/';
 if(exist(cfg.outdata)~=7)
     mkdir(cfg.outdata)
 end
@@ -18,7 +18,7 @@ cfg.doaverage = 0;
 cfg.hasBaseline = 0;
 cfg.posneg= [0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1];
 cfg.onesided = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]; % does the final data have one or two shapes
-cfg.overwrite=1;
+cfg.overwrite=0;
 %%
 % NB: presentation is done slightly differently in this project, because
 % there are three conceptually different things (emotions, pain,

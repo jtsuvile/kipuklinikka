@@ -49,6 +49,7 @@ for ns=1:Nsubj;
 		end
     end
 %%    
+
     a=bodySPM_load_kipu([cfg.datapath '/' subjID '/'],2, cfg.mapnames);
     S=length(a);
     if( S ~= cfg.Nstimuli)
