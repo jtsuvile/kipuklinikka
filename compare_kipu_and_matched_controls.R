@@ -3,6 +3,10 @@ source('./code/helper_functions_for_r_analysis.R')
 library(psych)
 library(RColorBrewer)
 library(tidyverse)
+library(apaTables)
+library(rstatix)
+library(ggpubr)
+library(WRS2)
 
 subs <- read.csv('data/all_pain_patients_with_activations_19_10_2020.csv',
                  na.strings = 'NaN')
@@ -10,9 +14,6 @@ subs$batch <- 'patient'
 subs_control <- read.csv('data/matched_controls_with_activations_19_10_2020.csv',
                          na.strings = 'NaN')
 subs_control$batch <- 'control'
-## NB: stopgap measure until I fix the data preprocessing for the controls who don't 
-## have colour in to leave empty in the interface!
-subs_control <- subs_control %>% mutate(across(ends_with("color"), ~replace_na(., 0)))
 
 subs_fixed <- make_total_colouring_columns(subs) %>% rename_emotions()
 subs_control_fixed <- make_total_colouring_columns(subs_control) %>% rename_emotions()
@@ -23,44 +24,57 @@ data_long <- subs_all_big %>%
   select(subid, sex, batch, sadness_pos_color:neutral_total) %>% select(-contains("pain")) %>% select(-contains("sensitivity")) %>% 
   pivot_longer(sadness_pos_color:neutral_total, names_to = "emotion", values_to="prop_coloured") %>% 
   separate(emotion, into=c("emotion", "type", NA)) %>% pivot_wider(names_from=type, values_from=prop_coloured) %>% 
-  mutate(emotion = factor(emotion), subid = factor(subid), batch = factor(batch))
+  mutate(emotion = factor(emotion), subid = factor(subid), batch = factor(batch)) %>% 
+  rename(group = batch)
 
-# all coloured
-basic_anova <- aov(total ~ batch * emotion, data = data_long)
+outliers_total_pixels <- data_long %>% group_by(group, emotion) %>% identify_outliers(total)
+data_long %>% group_by(group, emotion) %>% shapiro_test(total)
+ggqqplot(data_long, "total", ggtheme = theme_bw()) +
+  facet_grid(emotion ~ group)
+
+# activations and deactivations
+basic_anova <- lm(total ~ group * emotion, data = data_long)
 summary(basic_anova)
+apa.aov.table(basic_anova, filename = "Table1_APA.doc", table.number = 1)
 
-summarized_total <- data_long %>% group_by(emotion, batch) %>% 
+special_anova <- bwtrim(total ~ group * emotion, id=subid, data = data_long)
+
+summarized_total <- data_long %>% group_by(emotion, group) %>% 
   summarise(coloured = mean(total, na.rm=T), sd = sd(total, na.rm=T), n = n(), na_nums= sum(is.na(total))) %>% 
   mutate(se = sd/sqrt(n))
 
+summary_for_reporting_1 <- data_long %>% group_by(group) %>% 
+  summarise(coloured = mean(total, na.rm=T), sd = sd(total, na.rm=T), n = n(), na_nums= sum(is.na(total)))
+
+summary_for_reporting_2 <- data_long %>% group_by(emotion) %>% 
+  summarise(coloured = mean(total, na.rm=T), sd = sd(total, na.rm=T), n = n(), na_nums= sum(is.na(total)))
+
 # positive activations
-basic_anova_pos <- aov(pos~ batch * emotion, data = data_long)
+basic_anova_pos <- aov(pos ~ group * emotion, data = data_long)
 summary(basic_anova_pos)
 
-summarized_pos <- data_long %>% group_by(emotion, batch) %>% 
+summarized_pos <- data_long %>% group_by(emotion, group) %>% 
   summarise(coloured = mean(pos, na.rm=T), sd = sd(pos, na.rm=T), n = n(), na_nums= sum(is.na(pos))) %>% 
   mutate(se = sd/sqrt(n))
 
 # negative (inactivations)
-basic_anova_neg <- aov(neg~ batch * emotion, data = data_long)
+basic_anova_neg <- aov(neg ~ group * emotion, data = data_long)
 summary(basic_anova_neg)
 
-summarized_neg <- data_long %>% group_by(emotion, batch) %>% 
+summarized_neg <- data_long %>% group_by(emotion, group) %>% 
   summarise(coloured = mean(neg, na.rm=T), sd = sd(neg, na.rm=T), n = n(), na_nums= sum(is.na(neg))) %>% 
   mutate(se = sd/sqrt(n))
 
 ## PLOT
 pd <- position_dodge(0.1)
-p <- ggplot(data=summarized_total, aes(x=emotion, y=coloured, colour=batch, group=batch)) +
-  geom_jitter(position = pd, alpha=0.3) +
+p <- ggplot(data=summarized_total, aes(x=emotion, y=coloured, colour=group, group=group)) +
+  geom_jitter(data=data_long, aes(x=emotion, y=total,  colour=group, group=group), alpha=0.3) +
   geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
   geom_point(position=pd, size=2) +
   geom_line(position=pd, size=2) +
-  #scale_x_discrete(limits=c('fear_total','happiness_total','sadness_total',
-  #                          'anger_total','disgust_total','surprise_total','neutral_total'),
-  #                 labels=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
+  scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral')) +
   theme_minimal() +
-  theme(text = element_text(size=16),
+  theme(text = element_text(size=20),
     axis.text.x = element_text(angle = 45, hjust = 1))+
   coord_fixed(ratio=7)+
   labs(color = "Group", y='Proportion coloured')
@@ -70,24 +84,14 @@ p
 ##
 ## positive pixels
 
-
-
-# ggline(data_long, x = "emotion", y = "coloured", color = "batch",
-#        add = c("mean_se", "dotplot"),
-#        palette = c("#00AFBB", "#E7B800"))
-
-
-p1 <- ggplot(data=summarized_pos, aes(x=emotion, y=coloured, colour=batch, group=batch)) +
-  geom_jitter(data=data_long_pos, aes(x=emotion, y=coloured, colour=batch), alpha=0.3) +
+p1 <- ggplot(data=summarized_pos, aes(x=emotion, y=coloured, colour=group, group=group)) +
+  geom_jitter(data=data_long, aes(x=emotion, y=pos,  colour=group, group=group), alpha=0.3) +
   geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
   geom_point(position=pd, size=2) +
   geom_line(position=pd, size=2) +
-  scale_x_discrete(limits=c('emotions_4_pos_color','emotions_1_pos_color','emotions_0_pos_color',
-                            'emotions_2_pos_color','emotions_5_pos_color','emotions_3_pos_color',
-                            'emotions_6_pos_color'), 
-                   labels=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
+  scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
   theme_minimal() +
-  theme(text = element_text(size=16),
+  theme(text = element_text(size=20),
         axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.y = element_blank())+
   coord_fixed(ratio=7)+
@@ -97,17 +101,14 @@ p1
 
 ## negative pixels
 
-p2 <- ggplot(data=summarized_neg, aes(x=emotion, y=coloured, colour=batch, group=batch)) +
-  geom_jitter(alpha=0.3, position=pd) +
+p2 <- ggplot(data=summarized_neg, aes(x=emotion, y=coloured, colour=group, group=group)) +
+  geom_jitter(data=data_long, aes(x=emotion, y=neg, colour=group, group=group), alpha=0.3) +
   geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
   geom_point(position=pd, size=2) +
   geom_line(position=pd, size=2) +
-  scale_x_discrete(limits=c('emotions_4_neg_color','emotions_1_neg_color','emotions_0_neg_color',
-                            'emotions_2_neg_color','emotions_5_neg_color','emotions_3_neg_color',
-                            'emotions_6_neg_color'), 
-                   labels=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
+  scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
   theme_minimal() +
-  theme(text = element_text(size=16),
+  theme(text = element_text(size=20),
     axis.text.x = element_text(angle = 45, hjust = 1),
     axis.title.y = element_blank()) +
   coord_fixed(ratio=7) +
@@ -117,10 +118,10 @@ p2
 
 
 ggarrange(p, p1, p2, 
-          labels = c("any coloured pixels", "activations", "deactivations"), font.label = c(size = 20),
+          labels = c("activations and deactivations", "activations", "deactivations"), font.label = c(size = 20),
           hjust = c(-0.3,-0.5,-0.35), vjust = 1,
           ncol = 3, nrow = 1, common.legend = TRUE) %>%
-  ggexport(filename = '/Users/jtsuvile/Documents/projects/kipupotilaat/figures/n_colored_pixels_patients_and_controls.png',
+  ggexport(filename = '/Users/juusu53/Documents/projects/kipupotilaat/figures/n_colored_pixels_patients_and_controls.png',
            width = 1300, height = 500, pointsize = 30)
 
 # ##
