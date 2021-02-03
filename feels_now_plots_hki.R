@@ -8,7 +8,7 @@ library(rstatix)
 
 location <- '/Users/juusu53/Documents/projects/kipupotilaat/data/'
 subs <- read.csv(paste(location, 'all_pain_patients_with_activations_19_10_2020.csv', sep=''))
-subs_control <- read.csv(paste(location, 'matched_controls_with_activations_19_10_2020.csv', sep=''))
+subs_control <- read.csv(paste(location, 'matched_controls_with_activations_18_11_2020.csv', sep=''))
 subs <- subs %>% select(subid, sex, age, starts_with('feels')) %>% mutate(group='pain')
 data <- subs_control %>% select(subid, sex, age, starts_with('feels')) %>% mutate(group='control') %>% 
   rbind(subs)
@@ -27,7 +27,7 @@ p1 <- ggplot(plot_data_summary, aes(x=feeling, y=mean, color=group, group=group)
   geom_jitter(data=plot_data_long, aes(x=feeling, y=intensity), alpha=0.3) + 
   geom_errorbar(aes(ymin=mean-se, ymax=mean+se), width=.2, position=pd, color='black') +
   geom_point(size=3, position=pd) + 
-  geom_line(position=pd, size=2, aes(color=group)) +
+  #geom_line(position=pd, size=2, aes(color=group)) +
   scale_x_discrete(limits=c('pain', 'happy','anxiety','depression','sad','fear',
                             'surprise', 'angry','disgust'),
                    labels=c('pain', 'happiness','anxiety','depression','sadness','fear',

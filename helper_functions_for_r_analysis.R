@@ -20,3 +20,18 @@ rename_emotions <- function(data){
   colnames(data) <- new_colnames
   return(data)
 }
+
+rename_sensitivity <- function(data){
+  new_colnames <- colnames(data) %>% str_replace('sensitivity_0', 'tactile') %>% 
+    str_replace('sensitivity_1', 'nociceptive') %>% 
+    str_replace('sensitivity_2', 'hedonic') 
+  colnames(data) <- new_colnames
+  return(data)
+}
+
+rename_pain <- function(data){
+  new_colnames <- colnames(data) %>% str_replace('pain_0', 'currpain') %>% 
+    str_replace('pain_1', 'chronpain')
+  colnames(data) <- new_colnames
+  return(data)
+}

@@ -1,6 +1,6 @@
 library(tidyverse)
-data <- read.csv('/Users/juusu53/Documents/projects/kipupotilaat/data/controls/all_healthy_with_activations.csv')
-sublist <- read.csv('/Users/juusu53/Documents/projects/kipupotilaat/data/controls/subs.txt', header=FALSE)
+data <- read.csv('/Users/juusu53/Documents/projects/kipupotilaat/data/bg_pain_stockholm_with_activations_12_2020_new_subs.csv')
+sublist <- read.csv('/Users/juusu53/Documents/projects/kipupotilaat/data/KI/subs_new_12_2020.txt', header=FALSE)
 
 failed_qc_subids <- data %>% select(subid, emotions_0_pos_color:sensitivity_2_pos_color) %>% 
   pivot_longer(emotions_0_pos_color:sensitivity_2_pos_color, values_to = "coloured", names_to = "task" ) %>% 
@@ -9,10 +9,10 @@ failed_qc_subids <- data %>% select(subid, emotions_0_pos_color:sensitivity_2_po
 
 passed_qc_sublist <- sublist %>% filter(!(V1 %in% failed_qc_subids$subid))
 
-fil <- file("/Users/juusu53/Documents/projects/kipupotilaat/data/controls/subjects_failed_colouring_qc.txt", open="w")
+fil <- file("/Users/juusu53/Documents/projects/kipupotilaat/data/KI/new_subjects_failed_colouring_qc.txt", open="w")
 write_lines(failed_qc_subids$subid, fil)
 close(fil)
 
-fil1 <- file("/Users/juusu53/Documents/projects/kipupotilaat/data/controls/subs_pass_qc.txt", open="w")
+fil1 <- file("/Users/juusu53/Documents/projects/kipupotilaat/data/KI/new_subs_pass_qc.txt", open="w")
 write_lines(passed_qc_sublist$V1, fil1)
 close(fil1)
