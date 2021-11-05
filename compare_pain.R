@@ -22,7 +22,7 @@ data_long <- subs_all_big %>%
   rename(current = pain_0_pos_color, chronic = pain_1_pos_color,
          tactile = sensitivity_0_pos_color, pain = sensitivity_1_pos_color,
          hedonic = sensitivity_2_pos_color) %>% 
-  mutate(subid = factor(subid), batch = factor(batch)) %>% 
+  mutate(subid = factor(subid), batch = factor(batch, levels=c('patient','control'))) %>% 
   rename(group = batch)
 
 ## pain plot
@@ -46,7 +46,7 @@ data_long %>% pivot_longer(current:chronic, names_to='pain type', values_to='pro
   theme_classic() +
   theme(text = element_text(size=20),
         axis.text = element_text(size=20))
-ggsave('/Users/juusu53/Documents/projects/kipupotilaat/figures/pain_extent_helsinki_controls.pdf',
+ggsave('/Users/juusu53/Documents/projects/kipupotilaat/figures/helsinki_manuscript_figs/pain_extent_helsinki_controls.pdf',
        width = 8, height = 8)
 
 ## sensitivity plot
@@ -73,5 +73,5 @@ data_long %>% pivot_longer(tactile:hedonic, names_to='sensitivity type', values_
   theme_classic() +
   theme(text = element_text(size=20),
         axis.text = element_text(size=20))
-ggsave('/Users/juusu53/Documents/projects/kipupotilaat/figures/sensitivity_extent_helsinki_controls.pdf',
+ggsave('/Users/juusu53/Documents/projects/kipupotilaat/figures/helsinki_manuscript_figs/sensitivity_extent_helsinki_controls.pdf',
        width = 8, height = 8)

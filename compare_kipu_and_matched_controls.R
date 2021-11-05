@@ -9,6 +9,7 @@ library(ggpubr)
 library(WRS2)
 library(raincloudplots)
 library(gghalves)
+# NB: fix old style plot titles, send both new and old
 
 subs <- read.csv('data/all_pain_patients_with_activations_19_10_2020.csv',
                  na.strings = 'NaN')
@@ -26,7 +27,7 @@ data_long <- subs_all_big %>%
   select(subid, sex, batch, sadness_pos_color:neutral_total) %>% select(-contains("pain")) %>% select(-contains("sensitivity")) %>% 
   pivot_longer(sadness_pos_color:neutral_total, names_to = "emotion", values_to="prop_coloured") %>% 
   separate(emotion, into=c("emotion", "type", NA)) %>% pivot_wider(names_from=type, values_from=prop_coloured) %>% 
-  mutate(emotion = factor(emotion), subid = factor(subid)) %>% #, batch = factor(batch, levels=c('patient', 'control'))) %>% 
+  mutate(emotion = factor(emotion), subid = factor(subid), batch = factor(batch, levels=c('patient', 'control'))) %>% 
   rename(group = batch) 
 
 outliers_total_pixels <- data_long %>% group_by(group, emotion) %>% identify_outliers(total)
@@ -75,8 +76,9 @@ g <- ggplot(data = data_long, aes(y = total, x = emotion, fill = group, col=grou
   geom_boxplot(width=0.4, outlier.shape = NA, alpha = 0.5, position = position_dodge(width=0.6), notch=TRUE, col='black') +
   scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral')) +
   expand_limits(x = 5.25) +
-  labs(y='Proportion of body area coloured', x='') + 
+  labs(y=' ', x='') + 
   #coord_flip() +
+  ggtitle("C Combined") + 
   theme_classic() +
   theme(text = element_text(size=20),
         plot.margin = margin(1.5,0.1,0.1,0.1, "cm"),
@@ -90,8 +92,9 @@ g2 <- ggplot(data = data_long, aes(y = pos, x = emotion, fill = group, col=group
   geom_boxplot(width=0.4, outlier.shape = NA, alpha = 0.5, position = position_dodge(width=0.6), notch=TRUE, col='black') +
   scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral')) +
   expand_limits(x = 5.25) +
-  labs(y=' ', x='') + 
+  labs(y='Proportion of body area coloured', x='') + 
   #coord_flip() +
+  ggtitle("A Activations") + 
   theme_classic() +
   theme(text = element_text(size=20),
         plot.margin = margin(1.5,0.1,0.1,0.1, "cm"),
@@ -107,34 +110,40 @@ g3 <- ggplot(data = data_long, aes(y = neg, x = emotion, fill = group, col=group
   labs(y=' ', x='') + 
   #coord_flip() +
   theme_classic() +
+  ggtitle("B Deactivations") + 
   theme(text = element_text(size=20),
         plot.margin = margin(1.5,0.1,0.1,0.1, "cm"),
         axis.text.x = element_text(angle = 45, hjust = 1))
 
-ggarrange(g, g2, g3, 
-          labels = c("activations and deactivations", "activations", "deactivations"), 
+ggarrange(g2, g3, g, 
+          #labels = c("A activations", "B deactivations", "C activations and deactivations"), 
           font.label = c(size = 24),
           hjust = c(-0.2,-0.55,-0.45), 
           vjust = 1.5,
           ncol = 3, nrow = 1, 
           legend = 'right',
           common.legend = TRUE) %>%
-  ggexport(filename = '/Users/juusu53/Documents/projects/kipupotilaat/figures/n_colored_pixels_patients_and_controls_dotandbox.png',
-           width = 1300, height = 500, pointsize = 30)
+  ggexport(filename = '/Users/juusu53/Documents/projects/kipupotilaat/figures/helsinki_manuscript_figs/n_colored_pixels_patients_and_controls_dotandbox.png',
+           width = 1000, height = 400, pointsize = 30)
 
 
 ## old style PLOT
-pd <- position_dodge(0.1)
+pd <- position_dodge(0.4)
+pjd <- position_jitterdodge(jitter.width = .15, dodge.width = 0.4)
 p <- ggplot(data=summarized_total, aes(x=emotion, y=coloured, colour=group, group=group)) +
-  geom_jitter(data=data_long, aes(x=emotion, y=total,  colour=group, group=group), alpha=0.3) +
+  #geom_jitter(data=data_long, aes(x=emotion, y=total,  colour=group, group=group), alpha=0.3) +
+  geom_point(data=data_long,aes(x=emotion, y=total,  colour=group, group=group), position = pjd, size = .9, alpha = 0.8) +
   geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
+  scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
   geom_point(position=pd, size=2) +
   geom_line(position=pd, size=2) +
-  theme_minimal() +
+  theme_classic() +
   theme(text = element_text(size=20),
     axis.text.x = element_text(angle = 45, hjust = 1))+
   coord_fixed(ratio=7)+
-  labs(color = "Group", y='Proportion coloured')
+  theme(plot.margin = margin(1,0.1,0.1,0.1, "cm")) + 
+  labs(color = "Group", x='', y='')
+
 
 p
 
@@ -142,44 +151,84 @@ p
 ## positive pixels
 
 p1 <- ggplot(data=summarized_pos, aes(x=emotion, y=coloured, colour=group, group=group)) +
-  geom_jitter(data=data_long, aes(x=emotion, y=pos,  colour=group, group=group), alpha=0.3) +
+  #geom_jitter(data=data_long, aes(x=emotion, y=pos,  colour=group, group=group), alpha=0.3) +
+  geom_point(data=data_long,aes(x=emotion, y=pos,  colour=group, group=group), position = pjd, size = .9, alpha = 0.8) +
+  geom_line(position=pd, size=2) +
   geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
   geom_point(position=pd, size=2) +
-  geom_line(position=pd, size=2) +
   scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
-  theme_minimal() +
+  theme_classic() +
   theme(text = element_text(size=20),
         axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.y = element_blank())+
   coord_fixed(ratio=7)+
-  labs(color = "Group")
+  theme(plot.margin = margin(1,0.1,0.1,0.1, "cm")) + 
+  labs(color = "Group", y='Proportion coloured', x='')
+
 
 p1
 
 ## negative pixels
 
 p2 <- ggplot(data=summarized_neg, aes(x=emotion, y=coloured, colour=group, group=group)) +
-  geom_jitter(data=data_long, aes(x=emotion, y=neg, colour=group, group=group), alpha=0.3) +
+  #geom_jitter(data=data_long, aes(x=emotion, y=neg, colour=group, group=group), alpha=0.3) +
+  geom_point(data=data_long,aes(x=emotion, y=neg,  colour=group, group=group), position = pjd, size = .9, alpha = 0.8) +
   geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
   geom_point(position=pd, size=2) +
   geom_line(position=pd, size=2) +
   scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
-  theme_minimal() +
+  theme_classic() +
   theme(text = element_text(size=20),
     axis.text.x = element_text(angle = 45, hjust = 1),
     axis.title.y = element_blank()) +
   coord_fixed(ratio=7) +
+  theme(plot.margin = margin(1,0.1,0.1,0.1, "cm")) + 
   labs(color = "Group")
 
 p2
 
 
-ggarrange(p, p1, p2, 
-          labels = c("activations and deactivations", "activations", "deactivations"), font.label = c(size = 20),
-          hjust = c(-0.3,-0.5,-0.35), vjust = 1,
-          ncol = 3, nrow = 1, common.legend = TRUE) %>%
+ggarrange(p1, p2, p, 
+          labels = c("A Activations", "B Deactivations", "C combined"), font.label = c(size = 20),
+          hjust = c(-0.3,-0.5,-0.8), 
+          vjust = 1.1,
+          ncol = 3, nrow = 1, common.legend = TRUE,
+          legend='bottom')  %>%
   ggexport(filename = '/Users/juusu53/Documents/projects/kipupotilaat/figures/n_colored_pixels_patients_and_controls.png',
            width = 1300, height = 500, pointsize = 30)
+
+## old style as facet wrap
+pd <- position_dodge(0.4)
+pjd <- position_jitterdodge(jitter.width = .15, dodge.width = 0.4)
+
+data_extra_long <- data_long %>% pivot_longer(cols=c(pos, neg, total),names_to='type', values_to='Proportion colored') %>% 
+  mutate(type = factor(type, levels = c('pos', 'neg', 'total'), labels = c('A Activations', 'B Deactivations', 'C Combined activations\nand deactivations')))
+summarized_neg <- summarized_neg %>% mutate(type= 'neg')
+summarized_pos <- summarized_pos %>% mutate(type='pos')
+summarized_total <- summarized_total %>% mutate(type='total')
+summary_all <- rbind(summarized_neg, summarized_pos, summarized_total) %>% 
+  mutate(type = factor(type, levels = c('pos', 'neg', 'total'), labels = c('A Activations', 'B Deactivations', 'C Combined activations\nand deactivations')))
+
+ggplot(data=summary_all, aes(x=emotion, y=coloured, colour=group, group=group)) +
+  geom_point(data=data_extra_long,aes(x=emotion, y=`Proportion colored`,  colour=group, group=group), position = pjd, size = .9, alpha = 0.5) +
+  geom_errorbar(aes(ymin=coloured-se, ymax=coloured+se), color='black',width=.2, position=pd) +
+  geom_point(position=pd, size=2) +
+  geom_line(position=pd, size=2) +
+  scale_x_discrete(limits=c('fear','happiness','sadness', 'anger','disgust','surprise','neutral'))+
+  theme_classic() +
+  facet_wrap(~type) + 
+  theme(text = element_text(size=20),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position='bottom',
+        strip.background = element_blank(),
+        strip.text = element_text(hjust = 0)) +
+  coord_fixed(ratio=7) +
+  theme(plot.margin = margin(1,0.1,0.1,0.1, "cm")) + 
+  labs(color = "Group", y = 'Proportion coloured') 
+  
+
+ggsave('/Users/juusu53/Documents/projects/kipupotilaat/figures/helsinki_manuscript_figs/n_colored_pixels_act_deact_combo.pdf',
+       width=300, height = 150, units = 'mm', limitsize=FALSE)
 
 # ##
 # 
